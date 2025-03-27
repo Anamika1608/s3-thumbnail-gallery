@@ -1,5 +1,5 @@
 import './App.css'
-import { ImageGallery } from "./components/ImageGallery"
+import  ImageGallery  from "./components/ImageGallery"
 
 function App() {
 

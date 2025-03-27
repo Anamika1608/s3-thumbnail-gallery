@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import uploadImageToS3 from '../services/uploadImageToS3';
-import listThumbnails from '../services/listThumbnails';
-import downloadImage from '../services/downloadImage';
+import { uploadImageToS3 } from '../services/uploadImageToS3';
+import { listThumbnails } from '../services/listThumbnails';
+import { downloadImage } from '../services/downloadImage';
 
-const ImageGallery = () => {
-    const [thumbnails, setThumbnails] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+interface Thumbnail {
+    url: string;
+    originalUrl: string;
+}
+
+const ImageGallery: React.FC = () => {
+    const [thumbnails, setThumbnails] = useState<Thumbnail[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchThumbnails = async () => {
             setIsLoading(true);
             try {
-                const thumbnailList = await listThumbnails();
+                const thumbnailList: Thumbnail[] = await listThumbnails();
                 setThumbnails(thumbnailList);
             } catch (error) {
                 console.error('Failed to fetch thumbnails', error);
@@ -22,13 +27,13 @@ const ImageGallery = () => {
         fetchThumbnails();
     }, []);
 
-    const handleFileUpload = async (event) => {
-        const file = event.target.files[0];
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
         if (!file) return;
 
         setIsLoading(true);
         try {
-            const uploadResult = await uploadImageToS3(file);
+            const uploadResult: { thumbnailUrl: string; originalUrl: string } = await uploadImageToS3(file);
 
             setThumbnails(prev => [
                 ...prev,
@@ -44,10 +49,7 @@ const ImageGallery = () => {
         <div className="container mx-auto p-4">
             <div className="grid grid-cols-3 gap-4">
                 {thumbnails.map((thumb, index) => (
-                    <div
-                        key={index}
-                        className="relative group"
-                    >
+                    <div key={index} className="relative group">
                         <img
                             src={thumb.url}
                             alt={`Thumbnail ${index}`}
