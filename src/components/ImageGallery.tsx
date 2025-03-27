@@ -4,8 +4,8 @@ import { listThumbnails } from '../services/listThumbnails';
 import { downloadImage } from '../services/downloadImage';
 
 interface Thumbnail {
-    url: string;
-    originalUrl: string;
+    thumbnailUrl: string;
+    originalUrl?: string;
 }
 
 const ImageGallery: React.FC = () => {
@@ -16,7 +16,7 @@ const ImageGallery: React.FC = () => {
         const fetchThumbnails = async () => {
             setIsLoading(true);
             try {
-                const thumbnailList: Thumbnail[] = await listThumbnails();
+                const thumbnailList: Thumbnail[] = (await listThumbnails()) || [];
                 setThumbnails(thumbnailList);
             } catch (error) {
                 console.error('Failed to fetch thumbnails', error);
@@ -37,7 +37,7 @@ const ImageGallery: React.FC = () => {
 
             setThumbnails(prev => [
                 ...prev,
-                { url: uploadResult.thumbnailUrl, originalUrl: uploadResult.originalUrl }
+                { thumbnailUrl: uploadResult.thumbnailUrl, originalUrl: uploadResult.originalUrl }
             ]);
         } catch (error) {
             console.error('Upload failed', error);
@@ -51,12 +51,12 @@ const ImageGallery: React.FC = () => {
                 {thumbnails.map((thumb, index) => (
                     <div key={index} className="relative group">
                         <img
-                            src={thumb.url}
+                            src={thumb.thumbnailUrl}
                             alt={`Thumbnail ${index}`}
                             className="w-full h-48 object-cover rounded"
                         />
                         <button
-                            onClick={() => downloadImage(thumb.originalUrl)}
+                            onClick={() => downloadImage(thumb.originalUrl as string)}
                             className="absolute bottom-2 right-2 bg-blue-500 text-white p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                             Download

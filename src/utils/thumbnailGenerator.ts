@@ -4,7 +4,23 @@ import sharp from 'sharp';
 
 const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
 
-export const handler = async (event, context) => {
+interface S3EventRecord {
+    s3: {
+        bucket: { name: string };
+        object: { key: string };
+    };
+}
+
+interface S3Event {
+    Records: S3EventRecord[];
+}
+
+interface LambdaResponse {
+    statusCode: number;
+    body: string;
+}
+
+export const handler = async (event: S3Event): Promise<LambdaResponse> => {
     console.log("Event received:", JSON.stringify(event, null, 2));
 
     try {
@@ -22,7 +38,12 @@ export const handler = async (event, context) => {
         const typeMatch = srcKey.match(/\.([^.]*)$/);
         if (!typeMatch) {
             console.log("Could not determine the image type.");
-            return;
+            return {
+                statusCode: 400,
+                body: JSON.stringify({
+                    message: "Could not determine the image type."
+                })
+            }
         }
 
         // Validate image type
@@ -30,7 +51,12 @@ export const handler = async (event, context) => {
         const supportedTypes = ['jpg', 'jpeg', 'png', 'webp'];
         if (!supportedTypes.includes(imageType)) {
             console.log(`Unsupported image type: ${imageType}`);
-            return;
+            return {
+                statusCode: 400,
+                body: JSON.stringify({
+                    message: `Unsupported image type: ${imageType}`
+                })
+            }
         }
 
         // Fetch the original image from S3
@@ -63,7 +89,7 @@ export const handler = async (event, context) => {
             Key: dstKey,
             Body: thumbnailBuffer,
             ContentType: `image/${imageType}`,
-            ACL: 'public-read'
+            ACL: 'public-read' as const
         };
 
         await s3.send(new PutObjectCommand(uploadParams));
@@ -78,7 +104,7 @@ export const handler = async (event, context) => {
             })
         };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Thumbnail generation error:', error);
         return {
             statusCode: 500,
