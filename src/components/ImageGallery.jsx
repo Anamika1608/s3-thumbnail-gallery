@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-    uploadImageToS3,
-    listThumbnails,
-    downloadImage
-} from '../services/s3Service';
+import uploadImageToS3 from '../services/uploadImageToS3';
+import listThumbnails from '../services/listThumbnails';
+import downloadImage from '../services/downloadImage';
 
 const ImageGallery = () => {
     const [thumbnails, setThumbnails] = useState([]);
