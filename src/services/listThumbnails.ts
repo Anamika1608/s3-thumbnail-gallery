@@ -1,4 +1,5 @@
-import { s3, THUMBNAIL_BUCKET, ORIGINAL_BUCKET } from '../config/awsConfig';
+import { s3Client, THUMBNAIL_BUCKET, ORIGINAL_BUCKET } from '../config/awsConfig';
+import { ListObjectsV2Command } from '@aws-sdk/client-s3';
 
 export const listThumbnails = async () => {
     try {
@@ -8,10 +9,11 @@ export const listThumbnails = async () => {
             MaxKeys: 50
         };
 
-        const data = await s3.listObjectsV2(params).promise();
+        const command = new ListObjectsV2Command(params);
+        const data = await s3Client.send(command);
 
         return data.Contents?.map(item => {
-            const originalKey = item.Key?.replace('thumbnail-uploads/', '').replace('thumbnail-', '');
+            const originalKey = item.Key?.replace('thumbnail-uploads/', '');
 
             return {
                 thumbnailUrl: `https://${THUMBNAIL_BUCKET}.s3.amazonaws.com/${item.Key}`,

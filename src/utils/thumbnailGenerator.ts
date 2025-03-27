@@ -2,7 +2,9 @@ import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3
 import { Readable } from 'stream';
 import sharp from 'sharp';
 
-const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+const s3 = new S3Client({
+    region: import.meta.env.VITE_AWS_REGION || 'us-east-1'
+});
 
 interface S3EventRecord {
     s3: {
@@ -32,7 +34,7 @@ export const handler = async (event: S3Event): Promise<LambdaResponse> => {
 
         // Define thumbnail bucket and key
         const dstBucket = `${srcBucket}-thumbnails`;
-        const dstKey = `thumbnail-${srcKey}`;
+        const dstKey = `thumbnail-uploads/${srcKey}`;
 
         // Determine image type
         const typeMatch = srcKey.match(/\.([^.]*)$/);
@@ -70,6 +72,8 @@ export const handler = async (event: S3Event): Promise<LambdaResponse> => {
         let imageBuffer;
         if (imageStream instanceof Readable) {
             imageBuffer = Buffer.concat(await imageStream.toArray());
+        } else if (imageStream instanceof Buffer) {
+            imageBuffer = imageStream;
         } else {
             throw new Error('Unknown object stream type');
         }
@@ -88,8 +92,7 @@ export const handler = async (event: S3Event): Promise<LambdaResponse> => {
             Bucket: dstBucket,
             Key: dstKey,
             Body: thumbnailBuffer,
-            ContentType: `image/${imageType}`,
-            ACL: 'public-read' as const
+            ContentType: `image/${imageType}`
         };
 
         await s3.send(new PutObjectCommand(uploadParams));

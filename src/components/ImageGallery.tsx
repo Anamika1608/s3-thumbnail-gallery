@@ -47,39 +47,60 @@ const ImageGallery: React.FC = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <div className="grid grid-cols-3 gap-4">
-                {thumbnails.map((thumb, index) => (
-                    <div key={index} className="relative group">
-                        <img
-                            src={thumb.thumbnailUrl}
-                            alt={`Thumbnail ${index}`}
-                            className="w-full h-48 object-cover rounded"
-                        />
-                        <button
-                            onClick={() => downloadImage(thumb.originalUrl as string)}
-                            className="absolute bottom-2 right-2 bg-blue-500 text-white p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                            Download
-                        </button>
+            {thumbnails.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 bg-gray-100 rounded-lg">
+                    <p className="text-gray-500 mb-4">No images uploaded yet</p>
+                    <input
+                        type="file"
+                        id="upload-input"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                        accept="image/*"
+                    />
+                    <label
+                        htmlFor="upload-input"
+                        className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600 cursor-pointer"
+                    >
+                        Upload First Image
+                    </label>
+                </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                        {thumbnails.map((thumb, index) => (
+                            <div key={index} className="relative group">
+                                <img
+                                    src={thumb.thumbnailUrl}
+                                    alt={`Thumbnail ${index}`}
+                                    className="w-full h-48 object-cover rounded"
+                                />
+                                <button
+                                    onClick={() => downloadImage(thumb.originalUrl as string)}
+                                    className="absolute bottom-2 right-2 bg-blue-500 text-white p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    Download
+                                </button>
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
 
-            <div className="fixed bottom-4 right-4">
-                <input
-                    type="file"
-                    id="upload-input"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                    accept="image/*"
-                />
-                <label
-                    htmlFor="upload-input"
-                    className="bg-green-500 text-white p-4 rounded-full shadow-lg cursor-pointer hover:bg-green-600"
-                >
-                    Upload Image
-                </label>
-            </div>
+                    <div className="flex justify-center">
+                        <input
+                            type="file"
+                            id="upload-input"
+                            className="hidden"
+                            onChange={handleFileUpload}
+                            accept="image/*"
+                        />
+                        <label
+                            htmlFor="upload-input"
+                            className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600 cursor-pointer"
+                        >
+                            Upload More Images
+                        </label>
+                    </div>
+                </>
+            )}
 
             {isLoading && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
